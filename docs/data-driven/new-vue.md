@@ -9,6 +9,8 @@ function Vue (options) {
   ) {
     warn('Vue is a constructor and should be called with the `new` keyword')
   }
+  // 执行的 _init 方法是从 initMixin里集成进去的
+  // _init时处理的options就是项目中 main.js里 new Vue时传入的，store， router， render等等
   this._init(options)
 }
 ```
@@ -16,12 +18,15 @@ function Vue (options) {
 
 ```js
 Vue.prototype._init = function (options?: Object) {
+  // new Vue(options)后，执行_init(options)方法，这里this就是个具体的Vue实例
   const vm: Component = this
   // a uid
-  vm._uid = uid++
+  vm._uid = uid++ // 给Vue实例对象分配id
 
   let startTag, endTag
   /* istanbul ignore if */
+  // mark是从外部导入的属性，它其实是个方法。如果在浏览器里并且支持performance.mark
+  // 这里是为开发环境下用devtool用的
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
     startTag = `vue-perf-start:${vm._uid}`
     endTag = `vue-perf-end:${vm._uid}`
@@ -29,7 +34,7 @@ Vue.prototype._init = function (options?: Object) {
   }
 
   // a flag to avoid this being observed
-  vm._isVue = true
+  vm._isVue = true // 我是个Vue实例，给我来个标记呗
   // merge options
   if (options && options._isComponent) {
     // optimize internal component instantiation
@@ -37,6 +42,7 @@ Vue.prototype._init = function (options?: Object) {
     // internal component options needs special treatment.
     initInternalComponent(vm, options)
   } else {
+    // 从初始化时传入的options合并到实例对象的自有属性上 $options
     vm.$options = mergeOptions(
       resolveConstructorOptions(vm.constructor),
       options || {},

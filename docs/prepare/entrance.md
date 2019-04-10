@@ -231,10 +231,12 @@ Vue.js 在整个初始化过程中，除了给它的原型 prototype 上扩展�
 
 ```js
 export function initGlobalAPI (Vue: GlobalAPI) {
-  // config
+  // --config----
+  // 跟 Vue这个类对象添加全局配置 config，就是 api里的那个全局 config
   const configDef = {}
   configDef.get = () => config
   if (process.env.NODE_ENV !== 'production') {
+    // 如果不是 production 环境，给 config设定新值时会报错。这也是为啥教程里说 config的“属性”可以单独去设置，但不能直接更换整个 config
     configDef.set = () => {
       warn(
         'Do not replace the Vue.config object, set individual fields instead.'
@@ -242,7 +244,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
     }
   }
   Object.defineProperty(Vue, 'config', configDef)
-
+  // ---------
   // exposed util methods.
   // NOTE: these are not considered part of the public API - avoid relying on
   // them unless you are aware of the risk.
@@ -258,6 +260,8 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   Vue.nextTick = nextTick
 
   Vue.options = Object.create(null)
+    // component filter directive
+    // 给每一个项创建单独的Object，就相当于建个缓存池，之后往这里添加
   ASSET_TYPES.forEach(type => {
     Vue.options[type + 's'] = Object.create(null)
   })
@@ -266,6 +270,8 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue
 
+  // 上面刚初始化好 options和 options.components，这里就把内置的一些组件继承过去了
+  // 这时候 builtInComponents只有个 keep-alive
   extend(Vue.options.components, builtInComponents)
 
   initUse(Vue)

@@ -31,8 +31,12 @@ let builds = require('./config').getAllBuilds()
 
 // filter builds via command line arg
 if (process.argv[2]) {
+  // 编译时候如果传入参数，那就是过滤的关键字
+  // 分割出所有的过滤选项
   const filters = process.argv[2].split(',')
+  // 对于所有的builds的选项，根据filter传入的方法去过滤
   builds = builds.filter(b => {
+    // 在 ./config.js里，getAllBuilds方法会把原来初始时候的 builds对象“翻译”成最终导出的配置项，里面有 output _name等属性
     return filters.some(f => b.output.file.indexOf(f) > -1 || b._name.indexOf(f) > -1)
   })
 } else {
