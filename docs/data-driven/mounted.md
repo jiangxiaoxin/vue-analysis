@@ -5,6 +5,9 @@ Vue 中我们是通过 `$mount` 实例方法去挂载 `vm` 的，`$mount` 方法
 `compiler` 版本的 `$mount` 实现非常有意思，先来看一下 `src/platform/web/entry-runtime-with-compiler.js` 文件中定义：
 
 ```js
+// 先缓存原来的 $mount方法
+// 然后重写$mount方法，在新的 $mount方法里调用原来的 $mount挂载到元素上
+// 原来的 $mount方法是真挂载，这里新写的 $mount加入了对 options属性的判断，将 template编译成 render方法之后再挂载到元素上
 const mount = Vue.prototype.$mount
 Vue.prototype.$mount = function (
   el?: string | Element,
@@ -22,9 +25,11 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // resolve template/el and convert to render function
-  if (!options.render) {
+  if (!options.render) { // 有的在new Vue的时候，传入的options里会有render方法，有的直接传入template。传入template的，需要在运行时去编译才能运行
     let template = options.template
     if (template) {
+      // 在官网的《渲染函数 & JSX》章节展示了创建实例时传入了 template。
+      // 官网上传入的 template就是个带 # 的标签的id，对应的标签是个 script，Vue会查找到这个 script标签，然后把它内部的代码编译成对应的 render方法
       if (typeof template === 'string') {
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
@@ -55,9 +60,9 @@ Vue.prototype.$mount = function (
 
       const { render, staticRenderFns } = compileToFunctions(template, {
         shouldDecodeNewlines,
-        shouldDecodeNewlinesForHref,
-        delimiters: options.delimiters,
-        comments: options.comments
+        // shouldDecodeNewlinesForHref, // v2.5.0里已经没了这行
+        delimiters: options.delimiters, // 改变纯文本插入分隔符
+        comments: options.comments // 当设为 true 时，将会保留且渲染模板中的 HTML 注释。默认行为是舍弃它们。
       }, this)
       options.render = render
       options.staticRenderFns = staticRenderFns
@@ -72,6 +77,7 @@ Vue.prototype.$mount = function (
   return mount.call(this, el, hydrating)
 }
 ```
+
 这段代码首先缓存了原型上的 `$mount` 方法，再重新定义该方法，我们先来分析这段代码。首先，它对 `el` 做了限制，Vue 不能挂载在 `body`、`html` 这样的根节点上。接下来的是很关键的逻辑 —— 如果没有定义 `render` 方法，则会把 `el` 或者 `template` 字符串转换成 `render` 方法。这里我们要牢记，在 Vue 2.0 版本中，所有 Vue 的组件的渲染最终都需要 `render` 方法，无论我们是用单文件 .vue 方式开发组件，还是写了 `el` 或者 `template` 属性，最终都会转换成 `render` 方法，那么这个过程是 Vue 的一个“在线编译”的过程，它是调用 `compileToFunctions` 方法实现的，编译过程我们之后会介绍。最后，调用原先原型上的 `$mount` 方法挂载。
 
 原先原型上的 `$mount` 方法在 `src/platform/web/runtime/index.js` 中定义，之所以这么设计完全是为了复用，因为它是可以被 `runtime only` 版本的 Vue 直接使用的。
@@ -97,8 +103,8 @@ export function mountComponent (
   el: ?Element,
   hydrating?: boolean
 ): Component {
-  vm.$el = el
-  if (!vm.$options.render) {
+  vm.$el = el // 这就是实例对象打印是显示的 $el
+  if (!vm.$options.render) { // Vue实例的渲染最后都是通过 render方法
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
@@ -166,13 +172,31 @@ export function mountComponent (
   return vm
 }
 ```
+
 从上面的代码可以看到，`mountComponent` 核心就是先实例化一个渲染`Watcher`，在它的回调函数中会调用 `updateComponent` 方法，在此方法中调用 `vm._render` 方法先生成虚拟 Node，最终调用 `vm._update` 更新 DOM。
 
 `Watcher` 在这里起到两个作用，一个是初始化的时候会执行回调函数，另一个是当 vm 实例中的监测的数据发生变化的时候执行回调函数，这块儿我们会在之后的章节中介绍。
 
 函数最后判断为根节点的时候设置 `vm._isMounted` 为 `true`， 表示这个实例已经挂载了，同时执行 `mounted` 钩子函数。 这里注意 `vm.$vnode` 表示 Vue 实例的父虚拟 Node，所以它为 `Null` 则表示当前是根 Vue 的实例。
 
-
 ## 总结
 
 `mountComponent` 方法的逻辑也是非常清晰的，它会完成整个渲染工作，接下来我们要重点分析其中的细节，也就是最核心的 2 个方法：`vm._render` 和 `vm._update`。
+
+在重写原型上的 $mount方法时调用了 `idToTemplate`方法，代码如下面。`cached`是个方法，从外面给它传入一个方法，它返回一个方法。`cached`里创建了一个新方法，也就是返回的`idToTemplate`,会从缓存池里去查找`str`对应的缓存值，如果没有就执行传入的方法并把结果缓存起来。
+
+```js
+export function cached<F: Function> (fn: F): F {
+  const cache = Object.create(null)
+  return (function cachedFn (str: string) {
+    const hit = cache[str]
+    return hit || (cache[str] = fn(str))
+  }: any)
+}
+
+const idToTemplate = cached(id => {
+  const el = query(id)
+  return el && el.innerHTML
+})
+
+```

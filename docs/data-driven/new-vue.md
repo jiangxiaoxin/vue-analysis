@@ -67,13 +67,15 @@ Vue.prototype._init = function (options?: Object) {
   callHook(vm, 'created')
 
   /* istanbul ignore if */
+  // 开发环境下利用vue devtool进行性能测试用的
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
     vm._name = formatComponentName(vm, false)
     mark(endTag)
     measure(`vue ${vm._name} init`, startTag, endTag)
   }
 
-  if (vm.$options.el) {
+  if (vm.$options.el) { // 这里访问的是实例对象的$options属性，它是将new Vue时传入的options合并到自身的属性上了
+    // 实例化Vue对象时传入的options里如果有el，那就挂载到这个指定的el上
     vm.$mount(vm.$options.el)
   }
 }

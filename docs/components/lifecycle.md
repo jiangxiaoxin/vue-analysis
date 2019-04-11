@@ -29,6 +29,8 @@ export function callHook (vm: Component, hook: string) {
 }
 ```
 
+> `callHook`会在不同的阶段调用不同的生命周期函数。我们实际一般用`vue-cli`创建项目，然后里面只有一个根`Vue`实例，其他都是`VueComponent`。在这些对象上调用`callHook`时，都是从他们的`$options`去获取对应的方法。`Vue`是基类，在其`$options`上直接获取方法，而`VueComponent`是从`Vue`上获取的，其生命周期函数在它的`$options.__proto__`上。
+
 `callHook` 函数的逻辑很简单，根据传入的字符串 `hook`，去拿到 `vm.$options[hook]` 对应的回调函数数组，然后遍历执行，执行的时候把 `vm` 作为函数执行的上下文。
 
 在上一节中，我们详细地介绍了 Vue.js 合并 `options` 的过程，各个阶段的生命周期的函数也被合并到 `vm.$options` 里，并且是一个数组。因此 `callhook` 函数的功能就是调用某个生命周期钩子注册的所有回调函数。

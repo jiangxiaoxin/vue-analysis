@@ -274,25 +274,35 @@ const Sub = function VueComponent (options) {
 installComponentHooks(data)
 ```
 
+---
+
+> 这里新的 Vue版本已经改了 `installComponentHooks(data)` => `mergeHooks(data)`,不过做的事还是没啥变化的。其实`hooksToMerge`就是从`componentVNodeHooks`抽出所有的`key`，这些key就是些钩子函数的名字，在实例化Component的过程中被调用。如果`data.hook`上带有同名的钩子，就会调用`mergeHook`合并两个钩子。合并的实质就是按照先后顺序分别调用两个钩子而已。如果`data.hook`上不带同名钩子，就给`data.hook[key]`赋值原设置的钩子
+
+---
+
 我们之前提到 Vue.js 使用的 Virtual DOM 参考的是开源库 [snabbdom](https://github.com/snabbdom/snabbdom)，它的一个特点是在 VNode 的 patch 流程中对外暴露了各种时机的钩子函数，方便我们做一些额外的事情，Vue.js 也是充分利用这一点，在初始化一个 Component 类型的 VNode 的过程中实现了几个钩子函数：
 
 ```js
+// hooks to be invoked on component VNodes during patch
 const componentVNodeHooks = {
-  init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
-    if (
-      vnode.componentInstance &&
-      !vnode.componentInstance._isDestroyed &&
-      vnode.data.keepAlive
-    ) {
+  init (
+    vnode: VNodeWithData,
+    hydrating: boolean,
+    parentElm: ?Node,
+    refElm: ?Node
+  ): ?boolean {
+    if (!vnode.componentInstance || vnode.componentInstance._isDestroyed) {
+      const child = vnode.componentInstance = createComponentInstanceForVnode(
+        vnode,
+        activeInstance,
+        parentElm,
+        refElm
+      )
+      child.$mount(hydrating ? vnode.elm : undefined, hydrating)
+    } else if (vnode.data.keepAlive) {
       // kept-alive components, treat as a patch
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
-    } else {
-      const child = vnode.componentInstance = createComponentInstanceForVnode(
-        vnode,
-        activeInstance
-      )
-      child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
 
@@ -342,29 +352,27 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
-function installComponentHooks (data: VNodeData) {
-  const hooks = data.hook || (data.hook = {})
+function mergeHooks (data: VNodeData) {
+  if (!data.hook) {
+    data.hook = {}
+  }
   for (let i = 0; i < hooksToMerge.length; i++) {
     const key = hooksToMerge[i]
-    const existing = hooks[key]
-    const toMerge = componentVNodeHooks[key]
-    if (existing !== toMerge && !(existing && existing._merged)) {
-      hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge
-    }
+    const fromParent = data.hook[key]
+    const ours = componentVNodeHooks[key]
+    data.hook[key] = fromParent ? mergeHook(ours, fromParent) : ours
   }
 }
 
-function mergeHook (f1: any, f2: any): Function {
-  const merged = (a, b) => {
-    // flow complains about extra args which is why we use any
-    f1(a, b)
-    f2(a, b)
+function mergeHook (one: Function, two: Function): Function {
+  return function (a, b, c, d) {
+    one(a, b, c, d)
+    two(a, b, c, d)
   }
-  merged._merged = true
-  return merged
 }
 ```
-整个 `installComponentHooks` 的过程就是把 `componentVNodeHooks` 的钩子函数合并到 `data.hook` 中，在 VNode 执行 `patch` 的过程中执行相关的钩子函数，具体的执行我们稍后在介绍 `patch` 过程中会详细介绍。这里要注意的是合并策略，在合并过程中，如果某个时机的钩子已经存在 `data.hook` 中，那么通过执行 `mergeHook` 函数做合并，这个逻辑很简单，就是在最终执行的时候，依次执行这两个钩子函数即可。
+
+整个 `mergeHooks` 的过程就是把 `componentVNodeHooks` 的钩子函数合并到 `data.hook` 中，在 VNode 执行 `patch` 的过程中执行相关的钩子函数，具体的执行我们稍后在介绍 `patch` 过程中会详细介绍。这里要注意的是合并策略，在合并过程中，如果某个时机的钩子已经存在 `data.hook` 中，那么通过执行 `mergeHook` 函数做合并，这个逻辑很简单，就是在最终执行的时候，依次执行这两个钩子函数即可。
 
 ## 实例化 VNode
 

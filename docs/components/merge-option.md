@@ -163,6 +163,11 @@ export function mergeOptions (
 这里有意思的是 `mergeField` 函数，它对不同的 `key` 有着不同的合并策略。举例来说，对于生命周期函数，它的合并策略是这样的：
 
 ```js
+// 如果有childVal，那就判断有没有parentVal
+// 如果有parentVal，则return parentVal.concat(childVal)
+// 如果没有parentVal,就判断childVal是否是数组
+// 如果是数组，就直接返回childVal。如果不是数组就return [childVal]
+// parentVal.concat(childVal) 返回是一个新数组，不管childVal是个单变量还是数组，它的值都跟parentVal合并成一个新数组返回
 function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
@@ -180,6 +185,7 @@ LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
 ```
+
 这其中的 `LIFECYCLE_HOOKS` 的定义在 `src/shared/constants.js` 中：
 
 ```js
@@ -197,6 +203,7 @@ export const LIFECYCLE_HOOKS = [
   'errorCaptured'
 ]
 ```
+
 这里定义了 Vue.js 所有的钩子函数名称，所以对于钩子函数，他们的合并策略都是 `mergeHook` 函数。这个函数的实现也非常有意思，用了一个多层 3 元运算符，逻辑就是如果不存在 `childVal` ，就返回 `parentVal`；否则再判断是否存在 `parentVal`，如果存在就把 `childVal` 添加到 `parentVal` 后返回新数组；否则返回 `childVal` 的数组。所以回到 `mergeOptions` 函数，一旦 `parent` 和 `child` 都定义了相同的钩子函数，那么它们会把 2 个钩子函数合并成一个数组。
 
 关于其它属性的合并策略的定义都可以在 `src/core/util/options.js` 文件中看到，这里不一一介绍了，感兴趣的同学可以自己看。
@@ -204,6 +211,7 @@ export const LIFECYCLE_HOOKS = [
 通过执行 `mergeField` 函数，把合并后的结果保存到 `options` 对象中，最终返回它。
 
 因此，在我们当前这个 case 下，执行完如下合并后：
+
 ```js
 vm.$options = mergeOptions(
   resolveConstructorOptions(vm.constructor),
@@ -211,6 +219,7 @@ vm.$options = mergeOptions(
   vm
 )
 ```
+
 `vm.$options` 的值差不多是如下这样：
 
 ```js
@@ -260,7 +269,10 @@ Vue.extend = function (extendOptions: Object): Function {
   return Sub
 }
 ```
+
 我们只保留关键逻辑，这里的 `extendOptions` 对应的就是前面定义的组件对象，它会和 `Vue.options` 合并到 `Sub.opitons` 中。
+
+> 这里合并完之后，`Sub`上会有好过种options。`superOptions`,`extendOptions`,`sealedOptions`,`options`。其中`options`是完整的配置，`sealedOptions`又从`options`里复制了一份出来（干嘛？做备份吗？）
 
 接下来我们再回忆一下子组件的初始化过程，代码定义在 `src/core/vdom/create-component.js` 中：
 
@@ -279,7 +291,7 @@ export function createComponentInstanceForVnode (
 }
 ```
 
-这里的 `vnode.componentOptions.Ctor` 就是指向 `Vue.extend` 的返回值 `Sub`， 所以 执行 `new vnode.componentOptions.Ctor(options)` 接着执行 `this._init(options)`，因为 `options._isComponent` 为 true，那么合并 `options` 的过程走到了 ` initInternalComponent(vm, options)` 逻辑。先来看一下它的代码实现，在 `src/core/instance/init.js` 中：
+这里的 `vnode.componentOptions.Ctor` 就是指向 `Vue.extend` 的返回值 `Sub`， 所以 执行 `new vnode.componentOptions.Ctor(options)` 接着执行 `this._init(options)`，因为 `options._isComponent` 为 true，那么合并 `options` 的过程走到了 `initInternalComponent(vm, options)` 逻辑。先来看一下它的代码实现，在 `src/core/instance/init.js` 中：
 
 ```js
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
@@ -358,5 +370,3 @@ vm.$options = {
 那么至此，Vue 初始化阶段对于 `options` 的合并过程就介绍完了，我们需要知道对于 `options` 的合并有 2 种方式，子组件初始化过程通过 `initInternalComponent` 方式要比外部初始化 Vue 通过 `mergeOptions` 的过程要快，合并完的结果保留在 `vm.$options` 中。
 
 纵观一些库、框架的设计几乎都是类似的，自身定义了一些默认配置，同时又可以在初始化阶段传入一些定义配置，然后去 merge 默认配置，来达到定制化不同需求的目的。只不过在 Vue 的场景下，会对 merge 的过程做一些精细化控制，虽然我们在开发自己的 JSSDK 的时候并没有 Vue 这么复杂，但这个设计思想是值得我们借鉴的。
-
-
