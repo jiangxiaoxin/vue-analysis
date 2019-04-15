@@ -1,6 +1,6 @@
 # 响应式原理
 
-点击按钮total加1，触发新的渲染，大体流程如下：
+点击按钮 total 加 1，触发新的渲染，大体流程如下：
 
 `total+1` => `reactiveSetter` => `dep.notify()` => `[watcher, watcher,....].forEach(() => watcher.update)` => `queueWatcher` => `nextTick` => `run` => `get` => `updateComponent` => `Vue._render`
 
@@ -12,7 +12,7 @@
 /**
  * Define a reactive property on an Object.
  */
-export function defineReactive (
+export function defineReactive(
   obj: Object,
   key: string,
   val: any,
@@ -34,7 +34,7 @@ export function defineReactive (
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
-    get: function reactiveGetter () {
+    get: function reactiveGetter() {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
         dep.depend()
@@ -47,7 +47,7 @@ export function defineReactive (
       }
       return value
     },
-    set: function reactiveSetter (newVal) {
+    set: function reactiveSetter(newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
       if (newVal === value || (newVal !== newVal && value !== value)) {
@@ -69,7 +69,7 @@ export function defineReactive (
 }
 ```
 
-上面是`Vue`里对属性进行响应式改造的关键代码。对于每个键，它都重写了键的`getter`和`setter`。  
+上面是`Vue`里对属性进行响应式改造的关键代码。对于每个键，它都重写了键的`getter`和`setter`。
 
 一进入`defineReactive`方法，首先执行`new Dep()`，创建了一个跟这个`key`对应的`Dep`实例，随后`defineProperty`重写`key`的`getter`和`setter`,在`get`方法里，调用了`dep.depend()`进行依赖收集。在`set`方法里，如果改写之前就有`setter`方法就去执行(`setter.call(obj, newVal)`)，如果没有就直接改值(`(val = newVal)`)，关键是设置好值之后通过`dep.notify()`通知所有关注此项的`watcher`实例。
 

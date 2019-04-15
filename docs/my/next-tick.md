@@ -9,22 +9,24 @@ this.$nextTick(() => {
   console.log(1)
 })
 
-this.$nextTick().then(() => {
-  console.log(2)
-}).then(() => {
-  console.log(3)
-})
+this.$nextTick()
+  .then(() => {
+    console.log(2)
+  })
+  .then(() => {
+    console.log(3)
+  })
 ```
 
 `master`分支上的实现：
 
 ```js
-export const nextTick = (function () {
+export const nextTick = (function() {
   const callbacks = []
   let pending = false
   let timerFunc
 
-  function nextTickHandler () {
+  function nextTickHandler() {
     pending = false
     const copies = callbacks.slice(0)
     callbacks.length = 0
@@ -46,20 +48,20 @@ export const nextTick = (function () {
     timerFunc = () => {
       setImmediate(nextTickHandler)
     }
-  } else if (typeof MessageChannel !== 'undefined' && (
-    isNative(MessageChannel) ||
-    // PhantomJS
-    MessageChannel.toString() === '[object MessageChannelConstructor]'
-  )) {
+  } else if (
+    typeof MessageChannel !== 'undefined' &&
+    (isNative(MessageChannel) ||
+      // PhantomJS
+      MessageChannel.toString() === '[object MessageChannelConstructor]')
+  ) {
     const channel = new MessageChannel()
     const port = channel.port2
     channel.port1.onmessage = nextTickHandler
     timerFunc = () => {
       port.postMessage(1)
     }
-  } else
-  /* istanbul ignore next */
-  if (typeof Promise !== 'undefined' && isNative(Promise)) {
+  } else if (typeof Promise !== 'undefined' && isNative(Promise)) {
+    /* istanbul ignore next */
     // use microtask in non-DOM environments, e.g. Weex
     const p = Promise.resolve()
     timerFunc = () => {
@@ -72,7 +74,7 @@ export const nextTick = (function () {
     }
   }
 
-  return function queueNextTick (cb?: Function, ctx?: Object) {
+  return function queueNextTick(cb?: Function, ctx?: Object) {
     let _resolve
     callbacks.push(() => {
       if (cb) {

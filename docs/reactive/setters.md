@@ -8,7 +8,7 @@
 /**
  * Define a reactive property on an Object.
  */
-export function defineReactive (
+export function defineReactive(
   obj: Object,
   key: string,
   val: any,
@@ -34,7 +34,7 @@ export function defineReactive (
     enumerable: true,
     configurable: true,
     // ...
-    set: function reactiveSetter (newVal) {
+    set: function reactiveSetter(newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
       if (newVal === value || (newVal !== newVal && value !== value)) {
@@ -66,8 +66,8 @@ setter 的逻辑有 2 个关键的点，一个是 `childOb = !shallow && observe
 ```js
 class Dep {
   // ...
-  notify () {
-  // stabilize the subscriber list first
+  notify() {
+    // stabilize the subscriber list first
     const subs = this.subs.slice()
     for (let i = 0, l = subs.length; i < l; i++) {
       subs[i].update()
@@ -81,7 +81,7 @@ class Dep {
 ```js
 class Watcher {
   // ...
-  update () {
+  update() {
     /* istanbul ignore else */
     if (this.computed) {
       // A computed property watcher has two modes: lazy and activated.
@@ -107,7 +107,7 @@ class Watcher {
       queueWatcher(this)
     }
   }
-}  
+}
 ```
 
 这里对于 `Watcher` 的不同状态，会执行不同的逻辑，`computed` 和 `sync` 等状态的分析我会之后抽一小节详细介绍，在一般组件数据更新的场景，会走到最后一个 `queueWatcher(this)` 的逻辑，`queueWatcher` 的定义在 `src/core/observer/scheduler.js` 中：
@@ -122,7 +122,7 @@ let flushing = false
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
  */
-export function queueWatcher (watcher: Watcher) {
+export function queueWatcher(watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {
     has[id] = true
@@ -158,7 +158,7 @@ let index = 0
 /**
  * Flush both queues and run the watchers.
  */
-function flushSchedulerQueue () {
+function flushSchedulerQueue() {
   flushing = true
   let watcher, id
 
@@ -187,11 +187,10 @@ function flushSchedulerQueue () {
       circular[id] = (circular[id] || 0) + 1
       if (circular[id] > MAX_UPDATE_COUNT) {
         warn(
-          'You may have an infinite update loop ' + (
-            watcher.user
+          'You may have an infinite update loop ' +
+            (watcher.user
               ? `in watcher with expression "${watcher.expression}"`
-              : `in a component render function.`
-          ),
+              : `in a component render function.`),
           watcher.vm
         )
         break
@@ -221,7 +220,7 @@ function flushSchedulerQueue () {
 
 - 队列排序
 
-`queue.sort((a, b) => a.id - b.id)` 对队列做了**从小到大**(创建这些watcher的时候是先从父开始创建然后到子，先创建的父的watcher的id就是小的)的排序，这么做主要有以下要确保以下几点：
+`queue.sort((a, b) => a.id - b.id)` 对队列做了**从小到大**(创建这些 watcher 的时候是先从父开始创建然后到子，先创建的父的 watcher 的 id 就是小的)的排序，这么做主要有以下要确保以下几点：
 
 1.组件的更新由父到子；因为父组件的创建过程是先于子的，所以 `watcher` 的创建也是先父后子，执行顺序也应该保持先父后子。
 
@@ -234,7 +233,7 @@ function flushSchedulerQueue () {
 在对 `queue` 排序后，接着就是要对它做遍历，拿到对应的 `watcher`，执行 `watcher.run()`。这里需要注意一个细节，在遍历的时候每次都会对 `queue.length` 求值，因为在 `watcher.run()` 的时候，很可能用户会再次添加新的 `watcher`，这样会再次执行到 `queueWatcher`，如下：
 
 ```js
-export function queueWatcher (watcher: Watcher) {
+export function queueWatcher(watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {
     has[id] = true
@@ -270,7 +269,7 @@ let index = 0
 /**
  * Reset the scheduler's state.
  */
-function resetSchedulerState () {
+function resetSchedulerState() {
   index = queue.length = activatedChildren.length = 0
   has = {}
   if (process.env.NODE_ENV !== 'production') {
@@ -279,6 +278,7 @@ function resetSchedulerState () {
   waiting = flushing = false
 }
 ```
+
 逻辑非常简单，就是把这些控制流程状态的一些变量恢复到初始值，把 `watcher` 队列清空。
 
 接下来我们继续分析 `watcher.run()` 的逻辑，它的定义在 `src/core/observer/watcher.js` 中。
@@ -319,13 +319,13 @@ class Watcher {
    * Scheduler job interface.
    * Will be called by the scheduler.
    */
-  run () {
+  run() {
     if (this.active) {
       this.getAndInvoke(this.cb)
     }
   }
 
-  getAndInvoke (cb: Function) {
+  getAndInvoke(cb: Function) {
     const value = this.get()
     if (
       value !== this.value ||
