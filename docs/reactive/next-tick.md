@@ -37,6 +37,8 @@ for (macroTask of macroTaskQueue) {
 
 在 Vue 源码 2.5+ 后，`nextTick` 的实现单独有一个 JS 文件来维护它，它的源码并不多，总共也就 100 多行。接下来我们来看一下它的实现，在 `src/core/util/next-tick.js` 中：
 
+[**代码已经变了，并不是这里的实现**]
+
 ```js
 import { noop } from 'shared/util'
 import { handleError } from './error'

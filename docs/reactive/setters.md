@@ -221,7 +221,7 @@ function flushSchedulerQueue () {
 
 - 队列排序
 
-`queue.sort((a, b) => a.id - b.id)` 对队列做了从小到大的排序，这么做主要有以下要确保以下几点：
+`queue.sort((a, b) => a.id - b.id)` 对队列做了**从小到大**(创建这些watcher的时候是先从父开始创建然后到子，先创建的父的watcher的id就是小的)的排序，这么做主要有以下要确保以下几点：
 
 1.组件的更新由父到子；因为父组件的创建过程是先于子的，所以 `watcher` 的创建也是先父后子，执行顺序也应该保持先父后子。
 
@@ -253,7 +253,8 @@ export function queueWatcher (watcher: Watcher) {
   }
 }
 ```
-可以看到，这时候 `flushing` 为 true，就会执行到 else 的逻辑，然后就会从后往前找，找到第一个待插入 `watcher` 的 id 比当前队列中 `watcher` 的 id 大的位置。把 `watcher` 按照 `id `的插入到队列中，因此 `queue` 的长度发生了变化。
+
+可以看到，这时候 `flushing` 为 true，就会执行到 else 的逻辑，然后就会从后往前找，找到第一个待插入 `watcher` 的 id 比当前队列中 `watcher` 的 id 大的位置。把 `watcher` 按照 `id`的插入到队列中，因此 `queue` 的长度发生了变化。[**还是按照`watcher`创建的顺序去排列，让更新按照先后顺序去执行**]
 
 - 状态恢复
 
@@ -281,6 +282,36 @@ function resetSchedulerState () {
 逻辑非常简单，就是把这些控制流程状态的一些变量恢复到初始值，把 `watcher` 队列清空。
 
 接下来我们继续分析 `watcher.run()` 的逻辑，它的定义在 `src/core/observer/watcher.js` 中。
+
+```js
+// 这是新的run方法
+run () {
+    if (this.active) {
+      const value = this.get()
+      if (
+        value !== this.value ||
+        // Deep watchers and watchers on Object/Arrays should fire even
+        // when the value is the same, because the value may
+        // have mutated.
+        isObject(value) ||
+        this.deep
+      ) {
+        // set new value
+        const oldValue = this.value
+        this.value = value
+        if (this.user) {
+          try {
+            this.cb.call(this.vm, value, oldValue)
+          } catch (e) {
+            handleError(e, this.vm, `callback for watcher "${this.expression}"`)
+          }
+        } else {
+          this.cb.call(this.vm, value, oldValue)
+        }
+      }
+    }
+  }
+```
 
 ```js
 class Watcher {
