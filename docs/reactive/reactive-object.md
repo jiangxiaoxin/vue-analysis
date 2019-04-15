@@ -50,9 +50,7 @@ function initProps (vm: Component, propsOptions: Object) {
   const keys = vm.$options._propKeys = []
   const isRoot = !vm.$parent
   // root instance props should be converted
-  if (!isRoot) {
-    toggleObserving(false)
-  }
+  observerState.shouldConvert = isRoot
   for (const key in propsOptions) {
     keys.push(key)
     const value = validateProp(key, propsOptions, propsData, vm)
@@ -87,10 +85,13 @@ function initProps (vm: Component, propsOptions: Object) {
       proxy(vm, `_props`, key)
     }
   }
-  toggleObserving(true)
+  observerState.shouldConvert = true
 }
 ```
+
 `props` 的初始化主要过程，就是遍历定义的 `props` 配置。遍历的过程主要做两件事情：一个是调用 `defineReactive` 方法把每个 `prop` 对应的值变成响应式，可以通过 `vm._props.xxx` 访问到定义 `props` 中对应的属性。对于 `defineReactive` 方法，我们稍后会介绍；另一个是通过 `proxy` 把 `vm._props.xxx` 的访问代理到 `vm.xxx` 上，我们稍后也会介绍。
+
+> `initProps`传入的两个参数，一个是`Vue`实例或者`VueComponent`实例对象，一个是该实例创建时对应的`props`属性。对于`props`属性，内部用`for(const key in propsOptions)`进行了遍历。对于它的每个`key`，又都调用了`defineReactive(props, key, value)`方法，将其变成响应式的数据。这里`defineReactive`的第一个参数`props`是内部新建的，它对应于`vm._props`这个内部属性，所以如果要访问这个实例对象在初始化时传入的`props`里的属性名，要用`this._props.xxxx`的方式，但我们写的时候都是`this.xxxx`，这是下面`proxy`的功劳。对于初始化时`props`上所有的`key`，如果`vm`实例上没有，就通过`proxy`代理一下访问。
 
 - initData
 
@@ -140,6 +141,33 @@ function initData (vm: Component) {
 
 `data` 的初始化主要过程也是做两件事，一个是对定义 `data` 函数返回对象的遍历，通过 `proxy` 把每一个值 `vm._data.xxx` 都代理到 `vm.xxx` 上；另一个是调用 `observe` 方法观测整个 `data` 的变化，把 `data` 也变成响应式，可以通过 `vm._data.xxx` 访问到定义 `data` 返回函数中对应的属性，`observe` 我们稍后会介绍。
 
+> 在`initData`里有下面这行代码，`data`是个`function`，第一步就要执行这个`function`获取真正的**data对象**，如果`data`传入的不是`function`会报错。但是这里看，并不会报错，而是直接用了这个data对象。这不矛盾哈。在创建实例对象时，不管是`Vue`还是`VueComponent`，在初始化过程中都会经过`mergeOptions`这步，然后执行`mergeField`方法，在`mergeField`方法里根据不同的**策略**去执行不同属性的合并，其中`strats.data`就对传入的`data`属性做了判断，要求其必须是个`function`，否则报错。还有很多其他的合并策略：`strats.props` `strats.methods`等。而如果在运行时编译运行vue代码的话，data这里会有可能传入对象的。
+
+```js
+data = vm._data = typeof data === 'function' ? getData(data, vm) : data || {}
+```
+
+```html
+// 参考例子
+<div id="app" @click="changeMsg">
+  {{ message }}
+</div>
+```
+
+```js
+var app = new Vue({
+  el: '#app',
+  data: {
+    message: 'Hello Vue!'
+  },
+  methods: {
+    changeMsg() {
+      this.message = 'Hello World!'
+    }
+  }
+})
+```
+
 可以看到，无论是 `props` 或是 `data` 的初始化都是把它们变成响应式对象，这个过程我们接触到几个函数，接下来我们来详细分析它们。
 
 ## proxy
@@ -182,6 +210,8 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 
 `proxy` 方法的实现很简单，通过 `Object.defineProperty` 把 `target[sourceKey][key]` 的读写变成了对 `target[key]`  的读写。所以对于 `props` 而言，对 `vm._props.xxx` 的读写变成了 `vm.xxx` 的读写，而对于 `vm._props.xxx` 我们可以访问到定义在 `props` 中的属性，所以我们就可以通过 `vm.xxx` 访问到定义在 `props` 中的 `xxx` 属性了。同理，对于 `data` 而言，对 `vm._data.xxxx` 的读写变成了对 `vm.xxxx` 的读写，而对于 `vm._data.xxxx` 我们可以访问到定义在 `data` 函数返回对象中的属性，所以我们就可以通过 `vm.xxxx` 访问到定义在 `data` 函数返回对象中的 `xxxx` 属性了。
 
+> 给`target`定义新的属性,属性名就是传入的`key`，这样就有了`vm.xxxx`这种属性访问方式。而这个属性的值的`get`和`set`指向了`this[sourceKey][key]`,也就得到`vm.title`等价于`vm._props.title` 这种使用方式。
+
 ## `observe`
 
 `observe` 的功能就是用来监测数据的变化，它的定义在 `src/core/observer/index.js` 中：
@@ -200,7 +230,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
-    shouldObserve &&
+    observerState.shouldConvert &&
     !isServerRendering() &&
     (Array.isArray(value) || isPlainObject(value)) &&
     Object.isExtensible(value) &&
@@ -215,7 +245,9 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 }
 ```
 
-`observe` 方法的作用就是给非 VNode 的对象类型数据添加一个 `Observer`，如果已经添加过则直接返回，否则在满足一定条件下去实例化一个 `Observer` 对象实例。接下来我们来看一下 `Observer` 的作用。
+> `Object.isExtensible(value)`传入的参数是可扩展的(可以在上面添加新的属性和方法)。
+
+`observe` 方法的作用就是给非 VNode 的对象类型数据添加一个 `Observer`，如果已经添加过则直接返回，否则在满足一定条件下去实例化一个 `Observer` 对象实例，然后给这个对象类型数据添加`__ob__`属性。接下来我们来看一下 `Observer` 的作用。
 
 ## Observer
 

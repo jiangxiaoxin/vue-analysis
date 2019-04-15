@@ -47,6 +47,7 @@ export function defineReactive (
   })
 }
 ```
+
 这段代码我们只需要关注 2 个地方，一个是 `const dep = new Dep()` 实例化一个 `Dep` 的实例，另一个是在 `get` 函数中通过 `dep.depend` 做依赖收集，这里还有个对 `childObj` 判断的逻辑，我们之后会介绍它的作用。
 
 ## Dep
@@ -115,7 +116,6 @@ export function popTarget () {
 `Dep` 是一个 Class，它定义了一些属性和方法，这里需要特别注意的是它有一个静态属性 `target`，这是一个全局唯一 `Watcher`，这是一个非常巧妙的设计，因为在同一时间只能有一个全局的 `Watcher` 被计算，另外它的自身属性 `subs` 也是 `Watcher` 的数组。
 
 `Dep` 实际上就是对 `Watcher` 的一种管理，`Dep`  脱离 `Watcher` 单独存在是没有意义的，为了完整地讲清楚依赖收集过程，我们有必要看一下 `Watcher` 的一些相关实现，它的定义在 `src/core/observer/watcher.js` 中：
-
 
 ## `Watcher`
 
@@ -312,6 +312,7 @@ export function pushTarget (_target: Watcher) {
   Dep.target = _target
 }
 ```
+
 实际上就是把 `Dep.target` 赋值为当前的渲染 `watcher` 并压栈（为了恢复用）。接着又执行了：
 
 ```js
@@ -319,6 +320,7 @@ value = this.getter.call(vm, vm)
 ```
 
 `this.getter` 对应就是 `updateComponent` 函数，这实际上就是在执行：
+
 ```js
 vm._update(vm._render(), hydrating)
 ```
@@ -351,11 +353,13 @@ if (this.deep) {
   traverse(value)
 }
 ```
+
 这个是要递归去访问 `value`，触发它所有子项的 `getter`，这个之后会详细讲。接下来执行：
 
 ```js
 popTarget()
 ```
+
 `popTarget` 的定义在 `src/core/observer/dep.js` 中：
 
 ```js
