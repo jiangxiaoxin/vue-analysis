@@ -1,4 +1,4 @@
-# event: $on $off \$once
+# event: $on $off $once
 
 组件自定义事件机制。在$on的时候把事件和事件处理函数记录下来，$emit 时找出跟事件对应的处理函数 let cbs = vm.\_events[event]，最后去执行 cbs[i].apply(vm, args)
 
