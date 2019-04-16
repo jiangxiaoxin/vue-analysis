@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>A Basic Vue Playground</title>
+  <script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="counter">
+    <p>{{ counter }}</p>
+    <button @click="counter++">press me</button>
+  </div>
+
+  <script>
+    var vm = new Vue({
+      el: '#counter',
+      performace: true,
+      data() {
+        return {
+          counter: 0
+        }
+      },
+      mounted() {
+        console.log('vm mounted');
+      }
+    })
+
+    console.log('Vue.options', Vue.options);
+    console.log('vm.options', vm.$options);
+    console.log('vm.constructor.options', vm.constructor.options);
+    var opt = Object.create(vm.constructor.options);
+    console.log('opt', opt);
+  </script>
+</body>
+</html>
