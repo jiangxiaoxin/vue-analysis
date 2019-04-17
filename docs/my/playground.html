@@ -13,12 +13,26 @@
     <div id="counter">
       <p>{{ counter }}</p>
       <button @click="counter++">press me</button>
+      <input type="text" placeholder="hello vue..." v-focus />
     </div>
 
     <script>
       var vm = new Vue({
         el: '#counter',
-        performace: true,
+        directives: {
+          // focus: {
+          //   inserted: function(el) {
+          //     console.log('directive-focus-inserted', el)
+          //     el && el.focus()
+          //   }
+          // }
+          focus: function(el) {
+            // 如果focus是个function，那么只会{ bind: focus, update: focus }这样，在inserted的时候是不调用的。
+            // 与上面的focus例子做对比也可以看出来，这里的focus只有页面update重新渲染时，input才会自动focus。
+            console.log('directive-focus', el);
+            el && el.focus();
+          }
+        },
         data() {
           return {
             counter: 0
@@ -51,7 +65,7 @@
     </script>
 
     <script>
-      function toArray(list, start=0) {
+      function toArray(list, start = 0) {
         start = start || 0
         let i = list.length - start
         const ret = new Array(i)
@@ -88,13 +102,8 @@
       var c = changer(a)
       // console.log(a) // {msg: "world"}
       // console.log(c) // {msg: "world"}
-
     </script>
 
-    <script>
-    
-    
-
-    </script>
+    <script></script>
   </body>
 </html>
