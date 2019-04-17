@@ -1,6 +1,6 @@
 # event: $on $off $once
 
-组件自定义事件机制。在$on的时候把事件和事件处理函数记录下来，$emit 时找出跟事件对应的处理函数 let cbs = vm.\_events[event]，最后去执行 cbs[i].apply(vm, args)
+组件自定义事件机制。在`$on`的时候把事件和事件处理函数记录下来，`$emit` 时找出跟事件对应的处理函数 `let cbs = vm._events[event]`，最后去执行 `cbs[i].apply(vm, args)`
 
 ```js
 export function eventsMixin(Vue: Class<Component>) {
@@ -72,7 +72,7 @@ export function eventsMixin(Vue: Class<Component>) {
       while (i--) {
         cb = cbs[i]
         if (cb === fn || cb.fn === fn) {
-          // 遍历一下，找出对应的项然后删掉。这里 cb.fn === fn 是处理 $once的情况，$once存事件回调的时候特殊一点
+          // 遍历一下，找出对应的项然后删掉。这里 cb.fn === fn 是处理 $once的情况，$once存事件回调的时候特殊一点，添加了个属性fn
           cbs.splice(i, 1)
           break
         }
@@ -114,4 +114,19 @@ export function eventsMixin(Vue: Class<Component>) {
     return vm
   }
 }
+
+/**
+ * Convert an Array-like object to a real Array.
+ * 有些collectionList就是array-like
+ */
+export function toArray (list: any, start?: number): Array<any> {
+  start = start || 0
+  let i = list.length - start
+  const ret: Array<any> = new Array(i)
+  while (i--) {
+    ret[i] = list[i + start]
+  }
+  return ret
+}
+
 ```

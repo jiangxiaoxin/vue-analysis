@@ -17,37 +17,84 @@
 
     <script>
       var vm = new Vue({
-        el: "#counter",
+        el: '#counter',
         performace: true,
         data() {
           return {
             counter: 0
-          };
+          }
         },
         mounted() {
-          console.log("vm mounted");
+          console.log('vm mounted')
         }
-      });
+      })
 
-      console.log("Vue.options", Vue.options);
-      console.log("vm.options", vm.$options);
-      console.log("vm.constructor.options", vm.constructor.options);
-      var opt = Object.create(vm.constructor.options);
-      console.log("opt", opt);
+      // console.log('Vue.options', Vue.options)
+      // console.log('vm.options', vm.$options)
+      // console.log('vm.constructor.options', vm.constructor.options)
+      var opt = Object.create(vm.constructor.options)
+      // console.log('opt', opt)
     </script>
 
     <script>
       function Person(name) {
-        this.name = name;
+        this.name = name
       }
 
-      var p = new Person("mike");
-      console.log(p.constructor);
-      console.log(Person.prototype);
-      console.log(Person.prototype.constructor === p.constructor)
+      var p = new Person('mike')
+      // console.log(p.constructor)
+      // console.log(Person.prototype)
+      // console.log(Person.prototype.constructor === p.constructor)
 
       var a = new p.constructor('dave')
-      console.log(a)
+      // console.log(a)
+    </script>
+
+    <script>
+      function toArray(list, start=0) {
+        start = start || 0
+        let i = list.length - start
+        const ret = new Array(i)
+        while (i--) {
+          ret[i] = list[i + start]
+        }
+        return ret
+      }
+
+      var arr = [0, 1, 2, 3, 4]
+      var _arr = toArray(arr, 2)
+    </script>
+
+    <script>
+      var a = {
+        msg: 'hello'
+      }
+
+      function handler(obj) {
+        obj = Object.assign({}, obj, {
+          age: 18
+        })
+        return obj
+      }
+
+      function changer(obj) {
+        obj.msg = 'world'
+        return obj
+      }
+
+      var b = handler(a)
+      // console.log(a) // {msg: "hello"}
+      // console.log(b) // {msg: "hello", age: 18}
+      var c = changer(a)
+      // console.log(a) // {msg: "world"}
+      // console.log(c) // {msg: "world"}
+
+    </script>
+
+    <script>
+    
+    
+
     </script>
   </body>
 </html>
