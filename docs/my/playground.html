@@ -12,42 +12,89 @@
 
     <div id="counter">
       <p>{{ counter }}</p>
-      <button @click="counter++">press me</button>
-      <input type="text" placeholder="hello vue..." v-focus />
+      <button @click="counter++" ref='btn2'>press me</button>
+      <p>{{ oddOrEven }}</p>
+      <my-btn msg='my btn 123'/>
     </div>
 
     <script>
-      var vm = new Vue({
-        el: '#counter',
-        directives: {
-          // focus: {
-          //   inserted: function(el) {
-          //     console.log('directive-focus-inserted', el)
-          //     el && el.focus()
-          //   }
-          // }
-          focus: function(el) {
-            // 如果focus是个function，那么只会{ bind: focus, update: focus }这样，在inserted的时候是不调用的。
-            // 与上面的focus例子做对比也可以看出来，这里的focus只有页面update重新渲染时，input才会自动focus。
-            console.log('directive-focus', el);
-            el && el.focus();
+
+    var MyBtn =  Vue.component('MyBtn', {
+        name: 'MyBtn',
+        props: ['msg'],
+        template: '<button @click="btnClicked" ref="btn1">{{ msg }}</button>',
+        methods: {
+          btnClicked() {
+            console.log('my btn clicked', this.msg);
           }
-        },
-        data() {
-          return {
-            counter: 0
-          }
-        },
-        mounted() {
-          console.log('vm mounted')
         }
       })
 
-      // console.log('Vue.options', Vue.options)
-      // console.log('vm.options', vm.$options)
-      // console.log('vm.constructor.options', vm.constructor.options)
-      var opt = Object.create(vm.constructor.options)
-      // console.log('opt', opt)
+      
+
+
+      var vm = new Vue({
+        el: '#counter',
+        data() {
+          return {
+            counter: 0,
+            oddOrEven: 'even'
+          }
+        },
+        watch: {
+          counter: function(newVal) {
+            if (newVal % 2 === 0) {
+              this.oddOrEven = 'even'
+              console.log('even')
+            } else {
+              this.oddOrEven = 'odd'
+              console.log('odd')
+            }
+          },
+          oddOrEven: function(newVal) {
+            console.log('another watcher', newVal);
+          }
+        }
+      })
+
+      console.log(vm._watcher)
+      console.log(vm._watchers)
+      console.log(vm._watcher === vm._watchers[0])
+      
+    </script>
+
+    <script>
+      // var vm = new Vue({
+      //   el: '#counter',
+      //   directives: {
+      //     // focus: {
+      //     //   inserted: function(el) {
+      //     //     console.log('directive-focus-inserted', el)
+      //     //     el && el.focus()
+      //     //   }
+      //     // }
+      //     focus: function(el) {
+      //       // 如果focus是个function，那么只会{ bind: focus, update: focus }这样，在inserted的时候是不调用的。
+      //       // 与上面的focus例子做对比也可以看出来，这里的focus只有页面update重新渲染时，input才会自动focus。
+      //       console.log('directive-focus', el);
+      //       el && el.focus();
+      //     }
+      //   },
+      //   data() {
+      //     return {
+      //       counter: 0
+      //     }
+      //   },
+      //   mounted() {
+      //     console.log('vm mounted')
+      //   }
+      // })
+
+      // // console.log('Vue.options', Vue.options)
+      // // console.log('vm.options', vm.$options)
+      // // console.log('vm.constructor.options', vm.constructor.options)
+      // var opt = Object.create(vm.constructor.options)
+      // // console.log('opt', opt)
     </script>
 
     <script>

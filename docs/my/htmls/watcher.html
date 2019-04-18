@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>A Basic Vue Playground</title>
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>
+  </head>
+  <body>
+    
+    <div id="counter">
+      <p>{{ counter }}</p>
+      <button @click="counter++" ref='btn2'>press me</button>
+      <p>{{ oddOrEven }}</p>
+      <my-btn msg='my btn 123'/>
+    </div>
+
+    <script>
+
+    var MyBtn =  Vue.component('MyBtn', {
+        name: 'MyBtn',
+        props: ['msg'],
+        template: '<button @click="btnClicked" ref="btn1">{{ msg }}</button>',
+        methods: {
+          btnClicked() {
+            console.log('my btn clicked', this.msg);
+          }
+        }
+      })
+
+      var vm = new Vue({
+        el: '#counter',
+        data() {
+          return {
+            counter: 0,
+            oddOrEven: 'even'
+          }
+        },
+        watch: {
+          counter: function(newVal) {
+            if (newVal % 2 === 0) {
+              this.oddOrEven = 'even'
+              console.log('even')
+            } else {
+              this.oddOrEven = 'odd'
+              console.log('odd')
+            }
+          },
+          oddOrEven: function(newVal) {
+            console.log('another watcher', newVal);
+          }
+        }
+      })
+
+      console.log(vm._watcher)
+      console.log(vm._watchers)
+      console.log(vm._watcher === vm._watchers[0])
+      
+    </script>
+
+  </body>
+</html>

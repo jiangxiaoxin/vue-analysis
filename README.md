@@ -21,3 +21,5 @@
 [merge-option](./docs/my/merge-option.md)
 
 [cached-function](./docs/my/cached-function.md)
+
+[watcher](./docs/my/watcher.md)
