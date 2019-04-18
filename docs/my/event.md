@@ -1,5 +1,7 @@
 # event: $on $off $once
 
+> 所有的事件系统都是一条准则：谁发生的事件谁去处理。
+
 组件自定义事件机制。在`$on`的时候把事件和事件处理函数记录下来，`$emit` 时找出跟事件对应的处理函数 `let cbs = vm._events[event]`，最后去执行 `cbs[i].apply(vm, args)`
 
 ```js

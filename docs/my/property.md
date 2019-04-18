@@ -50,8 +50,8 @@ function initLifecycle(vm) {
 
 子组件，跟`$parent`形成对比。一个组件在实例化`_init`之后，会`vm.$children = []`，此时它还没有子组件。但是后续的组件在创建的时候，就会“找爹”,然后前面的组件的`$children`就会有值了。
 
-
 7. _watcher
 
+vm实例对应的 render watcher，用来重新渲染更新显示的。
 
 8. _watchers

@@ -24,3 +24,9 @@ export default class Watcher {
 在 watcher.html 的代码里，当点击 button 时，`counter` 会发生改变，从而导致 p 标签显示发生变化，这是个 render 渲染过程，`vm` 创建了一个 `watcher` 专门来做这件事，创建时传入的第二个参数 `expOrFn` 是个回调方法，`updateComponent = () => {vm._update(vm._render(), hydrating)}`,这个 watcher 是个 render watcher，用来改变渲染的。那如果再加个 button，点击后改变另外个属性，也有个对应的 p 标签发生变化，会不会创建另外个 render watcher 呢？**不会的**。render watcher 的职责是渲染发生变化时修改 vm 的显示，而不是修改 vm 某个标签的显示，**只有一个**。但是这并不是说一个 vm 只有一个 watcher 哦。代码里有 watch 属性，它观察住另外两个属性 `counter` 和 `oddOrEven`，他们发生变化后会执行对应的操作，那这个时候就会分别创建对应的 `watcher` 实例，传入的 `expOrFn` 就是 `counter` 和 `oddOrEven`这俩字符串(所以源码里 `expOrFn` 的类型是 `String|Function`)，而 `cb` 就是 watch 里它们各自对应的回调方法了。所以打印 `vm` 的`_watchers` 属性里面有 3 个 watcher 实例。
 
 > `vm._watcher` 是 `vm` 的 render watcher，只有一个，所有的更新操作都由它代理了。`vm._watchers` 是 vm 的所有的 watcher 的集合.
+
+new Vue => this._init(options) => initState(vm) => initWatch(vm, opts.watch) => createWatcher(vm, key, handler) => vm.$watch(expOrFn, handler, options) => var watcher = new Watcher(vm, expOrFn, cb, options);
+
+`flushSchedulerQueue` 会执行所有的 `watcher.run()` ，执行完后  `callUpdatedHooks(updatedQueue)`，在 `callUpdatedHooks` 里会对队列的 watcher 进行判断，如果 `watcher.vm._watcher === watcher` ，那这个 watcher 就是这个 vm 实例的 render watcher ，继续判断 `vm._isMounted` ,如果已经挂载了，就调用钩子函数 `callHook(vm, 'updated')` 完成一次更新.
+
+`watcher.user` 表示这个 watcher 是用户自己定义的 watcher ，而不是 Vue 内部自己生成的，用于组件内的 watch 侦听器。
