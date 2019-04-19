@@ -1,17 +1,23 @@
-### Vue 实例上的属性
+# Vue 实例上的属性
 
-1. \_isVue
+0. vm & vnode
+
+`vm`就是一个`Vue`的实例对象，`Vue`的组件也是`Vue`实例对象。`vnode`是节点的`js object`形式的描述。
+
+1. _isVue
 
 The `Vue.prototype._init` method sets a property on the Vue instance object called `._isVue` and sets it to `true` as a flag in order to **prevent it from being observed:**
 
-2. \_uid
-3. \_isComponent
+2. _uid
+3. _isComponent
 
 `options._isComponent` is only set to `true` in one instance throughout the Vue.js source code — in the `createComponentInstanceForVnode` function
 
-4. \_self
+如果是 VueComponent 实例就是true
 
-5. \$parent
+4. _self
+
+5. $parent
 
 组件实例的父组件。创建一个 `Vue` 实例的时候，会从整个组件树上从下往上找一个**非抽象**的父级组件作为它的父组件，该组件也会成为这个父组件的一个子组件。
 
@@ -46,12 +52,10 @@ function initLifecycle(vm) {
 }
 ```
 
-6. \$children
+6. $children
 
 子组件，跟`$parent`形成对比。一个组件在实例化`_init`之后，会`vm.$children = []`，此时它还没有子组件。但是后续的组件在创建的时候，就会“找爹”,然后前面的组件的`$children`就会有值了。
 
-7. _watcher
+7. _watcher & _watchers
 
-vm实例对应的 render watcher，用来重新渲染更新显示的。
-
-8. _watchers
+`_watcher`是 vm 实例对应的 render watcher，用来重新渲染更新显示的,每个实例只有一个这种 watcher。 `_watchers` 是 vm 实例的所有 watcher 的集合，出了 render watcher 之外，其他的都是实例`watch`侦听器属性内对应得。
