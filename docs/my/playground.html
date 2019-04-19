@@ -12,55 +12,32 @@
 
     <div id="counter">
       <p>{{ counter }}</p>
-      <button @click="counter++" ref='btn2'>press me</button>
+      <button @click="counter++" ref="btn2">press me</button>
       <p>{{ oddOrEven }}</p>
-      <my-btn msg='my btn 123'/>
+      <my-btn msg="my btn 123"></my-btn>
     </div>
 
     <script>
-
-    var MyBtn =  Vue.component('MyBtn', {
-        name: 'MyBtn',
-        props: ['msg'],
+      var MyBtn = Vue.component("MyBtn", {
+        name: "MyBtn",
+        props: ["msg"],
         template: '<button @click="btnClicked" ref="btn1">{{ msg }}</button>',
         methods: {
           btnClicked() {
-            console.log('my btn clicked', this.msg);
+            console.log("my btn clicked", this.msg);
           }
         }
-      })
-
-      
-
+      });
 
       var vm = new Vue({
-        el: '#counter',
+        el: "#counter",
         data() {
           return {
             counter: 0,
-            oddOrEven: 'even'
-          }
-        },
-        watch: {
-          counter: function(newVal) {
-            if (newVal % 2 === 0) {
-              this.oddOrEven = 'even'
-              console.log('even')
-            } else {
-              this.oddOrEven = 'odd'
-              console.log('odd')
-            }
-          },
-          oddOrEven: function(newVal) {
-            console.log('another watcher', newVal);
-          }
+            oddOrEven: "even"
+          };
         }
-      })
-
-      console.log(vm._watcher)
-      console.log(vm._watchers)
-      console.log(vm._watcher === vm._watchers[0])
-      
+      });
     </script>
 
     <script>
@@ -99,60 +76,58 @@
 
     <script>
       function Person(name) {
-        this.name = name
+        this.name = name;
       }
 
-      var p = new Person('mike')
+      var p = new Person("mike");
       // console.log(p.constructor)
       // console.log(Person.prototype)
       // console.log(Person.prototype.constructor === p.constructor)
 
-      var a = new p.constructor('dave')
+      var a = new p.constructor("dave");
       // console.log(a)
     </script>
 
     <script>
       function toArray(list, start = 0) {
-        start = start || 0
-        let i = list.length - start
-        const ret = new Array(i)
+        start = start || 0;
+        let i = list.length - start;
+        const ret = new Array(i);
         while (i--) {
-          ret[i] = list[i + start]
+          ret[i] = list[i + start];
         }
-        return ret
+        return ret;
       }
 
-      var arr = [0, 1, 2, 3, 4]
-      var _arr = toArray(arr, 2)
+      var arr = [0, 1, 2, 3, 4];
+      var _arr = toArray(arr, 2);
     </script>
 
     <script>
       var a = {
-        msg: 'hello'
-      }
+        msg: "hello"
+      };
 
       function handler(obj) {
         obj = Object.assign({}, obj, {
           age: 18
-        })
-        return obj
+        });
+        return obj;
       }
 
       function changer(obj) {
-        obj.msg = 'world'
-        return obj
+        obj.msg = "world";
+        return obj;
       }
 
-      var b = handler(a)
+      var b = handler(a);
       // console.log(a) // {msg: "hello"}
       // console.log(b) // {msg: "hello", age: 18}
-      var c = changer(a)
+      var c = changer(a);
       // console.log(a) // {msg: "world"}
       // console.log(c) // {msg: "world"}
     </script>
 
-    <script>
-
-    </script>
+    <script></script>
   </body>
 </html>
