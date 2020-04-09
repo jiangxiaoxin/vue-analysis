@@ -2,7 +2,7 @@
 
 0. vm & vnode
 
-`vm`就是一个`Vue`的实例对象，`Vue`的组件也是`Vue`实例对象。`vnode`是节点的`js object`形式的描述。
+`vm`就是一个`Vue`的实例对象，`Vue`的组件实例也是`Vue`实例对象。`vnode`是节点的`javascript object`形式的描述。
 
 1. _isVue
 
