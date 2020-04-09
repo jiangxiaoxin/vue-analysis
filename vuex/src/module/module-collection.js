@@ -41,6 +41,8 @@ export default class ModuleCollection {
     // register nested modules
     if (rawModule.modules) {
       forEachValue(rawModule.modules, (rawChildModule, key) => {
+        // path在这里添加的。
+        // 那可以看下多层级的store怎么构建的树结构
         this.register(path.concat(key), rawChildModule, runtime)
       })
     }

@@ -76,6 +76,8 @@ export default function (Vue) {
 
 `applyMixin` 就是这个 `export default function`，它还兼容了 Vue 1.0 的版本，这里我们只关注 Vue 2.0 以上版本的逻辑，它其实就全局混入了一个 `beforeCreate` 钩子函数，它的实现非常简单，就是把 `options.store` 保存在所有组件的 `this.$store` 中，这个 `options.store` 就是我们在实例化 `Store` 对象的实例，稍后我们会介绍，这也是为什么我们在组件中可以通过 `this.$store` 访问到这个实例。
 
+> 从 `this.$options.store` 来获取 `Vuex.Store` 实例，然后给所有的 Vue 实例绑定，那这样所有的 Vue 实例就都可以访问完整的 store 了。另外既然可以在`beforeCreate` 时可以绑定，那说明在`new Vue`的时候传入的参数在每个Vue实例之间都是共享的
+
 ## Store 实例化
 
 我们在 `import Vuex` 之后，会实例化其中的 `Store` 对象，返回 `store` 实例并传入 `new Vue` 的 `options` 中，也就是我们刚才提到的 `options.store`.
