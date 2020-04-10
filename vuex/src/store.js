@@ -49,7 +49,8 @@ export class Store {
     // strict mode
     this.strict = strict
 
-    const state = this._modules.root.state
+    const state = this._modules.root.state // 从整个store的根module上获取state，这个就是root state
+    // 在上面new ModuleCollection(options)之后，就有了root
 
     // init root module.
     // this also recursively registers all sub-modules
@@ -245,7 +246,7 @@ function resetStoreVM (store, state, hot) {
   Vue.config.silent = true
   store._vm = new Vue({
     data: {
-      $$state: state
+      $$state: state // 这个state就是根state，从根state开始，所有module的state都构建成一个state tree，用这个state tree做初始对象，创建一个对应的Vue实例
     },
     computed
   })
@@ -282,12 +283,16 @@ function installModule (store, rootState, path, module, hot) {
     const parentState = getNestedState(rootState, path.slice(0, -1))
     const moduleName = path[path.length - 1]
     store._withCommit(() => {
+    	// 设置使状态变成响应式的
+    	// 这也是可以 this.$store.state.user.post.postId这样子访问数据的原因。将子的state挂载到父的state上，并指定子的moduleName为其对应的key
       Vue.set(parentState, moduleName, module.state)
     })
   }
 
   const local = module.context = makeLocalContext(store, namespace, path)
 
+// key是mutation的key
+// mutation就是mutation对应的那个方法
   module.forEachMutation((mutation, key) => {
     const namespacedType = namespace + key
     registerMutation(store, namespacedType, mutation, local)
@@ -305,6 +310,7 @@ function installModule (store, rootState, path, module, hot) {
   })
 
   module.forEachChild((child, key) => {
+  	// 又递归的将每个module的子module state设置成响应式的访问，并且注册好它里面的action mutation getter
     installModule(store, rootState, path.concat(key), child, hot)
   })
 }

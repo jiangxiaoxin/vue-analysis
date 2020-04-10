@@ -123,7 +123,9 @@ export class Store {
     this._actionSubscribers = []
     this._mutations = Object.create(null)
     this._wrappedGetters = Object.create(null)
+    // 处理了所有的modules，整个树形结构都处理了
     this._modules = new ModuleCollection(options)
+    // 有些module设置了namespaced为true，那除了从_moduels一层一层走下去，还要在_modulesNamespaceMap里处理
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
     this._watcherVM = new Vue()
@@ -215,6 +217,19 @@ export default class ModuleCollection {
     }, this.root)
   }
 
+/**
+ * 这里就是计算整个namespace的地方，下面会用到namespace，
+ * namespace并不是从根开始一级一级的都算的，而是要看是不是设置了namespaced。
+ * root module
+ *  |
+ *  -------modules：-------user
+ *									|
+ *									-------shop
+ *													|
+ *													--------modules：----post
+ * 上面的结构，如果都没有设置namespanced，那就必须保证每个module里用到的key都不一样。所以在多级时最好设置namespanced。
+ * 设置后访问就要加namespace，假如只有post设置了，那就是post/xxx_mutation.如果shop也设置了，那就应该shop/post/xxx_mutation
+ */
   getNamespace (path) {
     let module = this.root
     return path.reduce((namespace, key) => {
@@ -237,12 +252,15 @@ export default class ModuleCollection {
       this.root = newModule
     } else {
       const parent = this.get(path.slice(0, -1))
+      // 通过addChild构建父子关系。在path.length === 0时设置root，所以打印this.root就能从_children一直查找下去
       parent.addChild(path[path.length - 1], newModule)
     }
 
     // register nested modules
     if (rawModule.modules) {
       forEachValue(rawModule.modules, (rawChildModule, key) => {
+      // 在这里每次都会创建一个新的path数组，concat合并两个数组，返回新数组，不改变旧数组
+      // 在这里递归的去处理每一个module，深度优先
         this.register(path.concat(key), rawChildModule, runtime)
       })
     }
@@ -331,6 +349,8 @@ export default class Module {
 ```
 
 来看一下 `Module` 的构造函数，对于每个模块而言，`this._rawModule` 表示模块的配置，`this._children` 表示它的所有子模块，`this.state` 表示这个模块定义的 `state`。
+
+> 在`Module`的构造函数里设置`this.state`时会检测`rawModule.state`是个 function 还是个对象。如果是 function，就会调用一次，如果是个对象，就直接赋值。
 
 回到 `register`，那么在实例化一个 `Module` 后，判断当前的 `path` 的长度如果为 0，则说明它是一个根模块，所以把 `newModule` 赋值给了 `this.root`，否则就需要建立父子关系了：
 
