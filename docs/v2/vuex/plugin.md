@@ -28,8 +28,9 @@ export default function createLogger ({
   logger = console
 } = {}) {
   return store => {
+  // 初始化时创建store.state的副本，以后每次通过mutation改变store.state 时都会对比prevState和nextState，这样可以查看前后变化
     let prevState = deepCopy(store.state)
-
+		// 订阅store的mutation，每次commit mutation时都会调用回调方法
     store.subscribe((mutation, state) => {
       if (typeof logger === 'undefined') {
         return
@@ -77,13 +78,29 @@ function pad (num, maxLength) {
 }
 ```
 
+```js
+/**
+ * logger插件
+ * logger.js返回的是个函数，使用时在plugins数组里createLogger()调用一次后，又返回一个函数：store => {},这个返回的方法才是vuex的plugin机制里注入插件时对应的方法
+ * plugins.forEach(plugin => plugin(this))。
+ * this就是store的实例，plugin就是 store => {}方法，在store => {}里对store添加监听
+ */
+import createLogger from 'vuex/dist/logger'
+
+const store = new Vuex.Store({
+  plugins: [createLogger()]
+})
+
+```
+
 插件函数接收的参数是 `store` 实例，它执行了 `store.subscribe` 方法，先来看一下 `subscribe` 的定义：
 
 ```js
+// 订阅事件，并返回取消方法。就是把方法放到数组里存下来，之后触发的时候，遍历数组取出方法，然后执行
 subscribe (fn) {
   return genericSubscribe(fn, this._subscribers)
 }
-
+// 订阅事件，利用局部作用域，返回可以取消订阅的方法
 function genericSubscribe (fn, subs) {
   if (subs.indexOf(fn) < 0) {
     subs.push(fn)
@@ -120,6 +137,26 @@ commit (_type, _payload, _options) {
 接下来就构造一些格式化的消息，打印出一些时间消息 `message`， 之前的状态 `prevState`，对应的 `mutation` 操作 `formattedMutation` 以及下一个状态 `nextState`。
 
 最后更新 `prevState = nextState`，为下一次提交 `mutation` 输出日志做准备。
+
+```js
+/**
+ * unifyObjectStyle 就是统一参数的传入方式，参数可以按照{type, payload, options}这样一个个对应传入，也可以{{type: type, otherParams: {}}, options}这样传入。很多库都这么写法。
+ */
+function unifyObjectStyle (type, payload, options) {
+  if (isObject(type) && type.type) {
+    options = payload
+    payload = type
+    type = type.type
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    assert(typeof type === 'string', `Expects string as the type, but found ${typeof type}.`)
+  }
+
+  return { type, payload, options }
+}
+
+```
 
 ## 总结
 

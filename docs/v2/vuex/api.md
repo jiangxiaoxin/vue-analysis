@@ -349,7 +349,10 @@ export const mapState = normalizeNamespace((namespace, states) => {
   })
   return res
 })
-
+/**
+ * 将传入参数的方式进行统一操作。如果按照(namespace, map)的方式传入，那就正常调用。如果只传入一个参数，那就认定namespace为空，传入的参数作为map。
+ * namespance后面要加“/”
+ */
 function normalizeNamespace (fn) {
   return (namespace, map) => {
     if (typeof namespace !== 'string') {
@@ -362,6 +365,9 @@ function normalizeNamespace (fn) {
   }
 }
 
+/**
+ * 返回一个数组，将state的对应访问统一解成对象形式，{ key, val}
+ */
 function normalizeMap (map) {
   return Array.isArray(map)
     ? map.map(key => ({ key, val: key }))
@@ -374,6 +380,8 @@ function normalizeMap (map) {
 当执行 `mapState(map)` 函数的时候，实际上就是执行 `normalizeNamespace` 包裹的函数，然后把 `map` 作为参数 `states` 传入。
 
 `mapState` 最终是要构造一个对象，每个对象的元素都是一个方法，因为这个对象是要扩展到组件的 `computed` 计算属性中的。函数首先执行 `normalizeMap` 方法，把这个 `states` 变成一个数组，数组的每个元素都是 `{key, val}` 的形式。接着再遍历这个数组，以 `key` 作为对象的 `key`，值为一个 `mappedState` 的函数，在这个函数的内部，获取到 `$store.getters` 和 `$store.state`，然后再判断数组的 `val` 如果是一个函数，执行该函数，传入 `state` 和 `getters`，否则直接访问 `state[val]`。
+
+> mapState构建的对象，返回给computed之后，其实就是"属性名" => "属性值的获取方法"对应起来，这样在computed中，就相当于手写了一堆computed获取值的代码，computed会构建响应式获取。也是充分利用了Vue的特性
 
 比起一个个手动声明计算属性，`mapState` 确实要方便许多，下面我们来看一下 `namespace` 的作用。
 
@@ -452,6 +460,7 @@ export default {
 ```js
 export const mapGetters = normalizeNamespace((namespace, getters) => {
   const res = {}
+  // getters是属性key的数组，normalizeMap后元素{ key, val},两个其实都还是属性的key，所以可以 val = namespace + val，构建完整路径后，值就是this.$store.getters[val]
   normalizeMap(getters).forEach(({ key, val }) => {
     // thie namespace has been mutate by normalizeNamespace
     val = namespace + val
@@ -628,6 +637,8 @@ function resetStore (store, hot) {
 ```
 
 该方法就是把 `store` 下的对应存储的 `_actions`、`_mutations`、`_wrappedGetters` 和 `_modulesNamespaceMap` 都清空，然后重新执行 `installModule` 安装所有模块以及 `resetStoreVM` 重置 `store._vm`。
+
+> 每次就是重新来一遍，但是保存下之前的state
 
 ## 总结
 

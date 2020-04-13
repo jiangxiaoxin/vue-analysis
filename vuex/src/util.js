@@ -38,7 +38,7 @@ export function deepCopy (obj, cache = []) {
     original: obj,
     copy
   })
-
+ 
   Object.keys(obj).forEach(key => {
     copy[key] = deepCopy(obj[key], cache)
   })

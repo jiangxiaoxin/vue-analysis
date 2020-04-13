@@ -100,6 +100,7 @@ export class Store {
         handler(payload)
       })
     })
+    // commit mutation之后，遍历执行回调
     this._subscribers.forEach(sub => sub(mutation, this.state))
 
     if (
