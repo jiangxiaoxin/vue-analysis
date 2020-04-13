@@ -25,3 +25,5 @@
 [watcher](./docs/my/watcher.md)
 
 [init-state](./docs/my/init-state.md)
+
+[de-indent](./docs/my/sfc-parser-deindent.md)

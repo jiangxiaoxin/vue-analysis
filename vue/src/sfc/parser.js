@@ -1,6 +1,6 @@
 /* @flow */
 
-import deindent from 'de-indent'
+import deindent from 'de-indent' // 将文件多余的缩进删掉
 import { parseHTML } from 'compiler/parser/html-parser'
 import { makeMap } from 'shared/util'
 
