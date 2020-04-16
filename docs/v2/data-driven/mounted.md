@@ -16,6 +16,9 @@ Vue.prototype.$mount = function (
   el = el && query(el)
 
   /* istanbul ignore if */
+    // document.documentElement => html
+    // document.body => body
+    // 不能挂载到html或者body元素上
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -25,11 +28,14 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // resolve template/el and convert to render function
-  if (!options.render) { // 有的在new Vue的时候，传入的options里会有render方法，有的直接传入template。传入template的，需要在运行时去编译才能运行
+  // 有的在new Vue的时候，传入的options里会有render方法，使用vue-cli创建的项目就是 render:h => h(App)
+  // 简单的使用直接传入template，这么用一般就是测试点东西时这么写，传入template的，需要在运行时去编译才能运行
+  if (!options.render) {
     let template = options.template
     if (template) {
       // 在官网的《渲染函数 & JSX》章节展示了创建实例时传入了 template。
       // 官网上传入的 template就是个带 # 的标签的id，对应的标签是个 script，Vue会查找到这个 script标签，然后把它内部的代码编译成对应的 render方法
+      // 取出的代码就是些html文本，然后要编译成具体的渲染函数
       if (typeof template === 'string') {
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
@@ -57,10 +63,11 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile')
       }
-
+      // 最重要的在这个compileToFunctions处，它要解析html结构，生成结构对应的js对象，生成function
       const { render, staticRenderFns } = compileToFunctions(template, {
+        outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
-        // shouldDecodeNewlinesForHref, // v2.5.0里已经没了这行
+        shouldDecodeNewlinesForHref,
         delimiters: options.delimiters, // 改变纯文本插入分隔符
         comments: options.comments // 当设为 true 时，将会保留且渲染模板中的 HTML 注释。默认行为是舍弃它们。
       }, this)
@@ -76,6 +83,14 @@ Vue.prototype.$mount = function (
   }
   return mount.call(this, el, hydrating)
 }
+```
+
+```js
+// 一段编译之后的 render function
+(function anonymous(
+) {
+with(this){return _c('div',{attrs:{"id":"app"}},[_c('p',[_v(_s(message))])])}
+})
 ```
 
 这段代码首先缓存了原型上的 `$mount` 方法，再重新定义该方法，我们先来分析这段代码。首先，它对 `el` 做了限制，Vue 不能挂载在 `body`、`html` 这样的根节点上。接下来的是很关键的逻辑 —— 如果没有定义 `render` 方法，则会把 `el` 或者 `template` 字符串转换成 `render` 方法。这里我们要牢记，在 Vue 2.0 版本中，所有 Vue 的组件的渲染最终都需要 `render` 方法，无论我们是用单文件 .vue 方式开发组件，还是写了 `el` 或者 `template` 属性，最终都会转换成 `render` 方法，那么这个过程是 Vue 的一个“在线编译”的过程，它是调用 `compileToFunctions` 方法实现的，编译过程我们之后会介绍。最后，调用原先原型上的 `$mount` 方法挂载。

@@ -116,6 +116,8 @@ export function _createElement (
 
 `_createElement` 方法有 5 个参数，`context` 表示 VNode 的上下文环境，它是 `Component` 类型；`tag` 表示标签，它可以是一个字符串，也可以是一个 `Component`；`data` 表示 VNode 的数据，它是一个 `VNodeData` 类型，可以在 `flow/vnode.js` 中找到它的定义，这里先不展开说；`children` 表示当前 VNode 的子节点，它是任意类型的，它接下来需要被规范为标准的 VNode 数组；`normalizationType` 表示子节点规范的类型，类型不同规范的方法也就不一样，它主要是参考 `render` 函数是编译生成的还是用户手写的。
 
+> `_createElement`最后返回的就是个`VNode`对象
+
 `createElement` 函数的流程略微有点多，我们接下来主要分析 2 个重点的流程 —— `children` 的规范化以及 VNode 的创建。
 
 ## children 的规范化
@@ -160,6 +162,13 @@ export function normalizeChildren (children: any): ?Array<VNode> {
 ```
 
 `simpleNormalizeChildren` 方法调用场景是 `render` 函数是编译生成的。理论上编译生成的 `children` 都已经是 VNode 类型的，但这里有一个例外，就是 `functional component` 函数式组件返回的是一个数组而不是一个根节点，所以会通过 `Array.prototype.concat` 方法把整个 `children` 数组打平，让它的深度只有一层。
+
+```
+a = [[1 ,2], [3, 4], [5, 6]]
+b = simpleNormalizeChildren(a)
+b => [1 ,2,3,4,5,6] 
+apply跟call要实现的功能一样，只是传参的格式不一样，call后面参数一个个排着队来，apply是一个数组。所以apply([[1 ,2], [3, 4], [5, 6]]) 其实是要contact([1,2]).contact([3, 4]).contact([5, 6])
+```
 
 `normalizeChildren` 方法的调用场景有 2 种，一个场景是 `render` 函数是用户手写的，当 `children` 只有一个节点的时候，Vue.js 从接口层面允许用户把 `children` 写成基础类型用来创建单个简单的文本节点，这种情况会调用 `createTextVNode` 创建一个文本节点的 VNode；另一个场景是当编译 `slot`、`v-for` 的时候会产生嵌套数组的情况，会调用 `normalizeArrayChildren` 方法，接下来看一下它的实现：
 

@@ -210,6 +210,7 @@ function Vue (options) {
   ) {
     warn('Vue is a constructor and should be called with the `new` keyword')
   }
+// 按照 new Vue(options)方法使用后，就会执行_init(options)方法来对实例进行初始化。_init在此处代码里并没看见，它是initMixin在prototype上添加的
   this._init(options)
 }
 
@@ -221,6 +222,13 @@ renderMixin(Vue)
 
 export default Vue
 ```
+
+```js
+export function initMixin(Vue) {
+    Vue.prototype._init = function() {};
+}
+```
+
 在这里，我们终于看到了 Vue 的庐山真面目，它实际上就是一个用 Function 实现的类，我们只能通过 `new Vue` 去实例化它。
 
 有些同学看到这不禁想问，为何 Vue 不用 ES6 的 Class 去实现呢？我们往后看这里有很多 ```xxxMixin``` 的函数调用，并把 `Vue` 当参数传入，它们的功能都是给 Vue 的 prototype 上扩展一些方法（这里具体的细节会在之后的文章介绍，这里不展开），Vue 按功能把这些扩展分散到多个模块中去实现，而不是在一个模块里实现所有，这种方式是用 Class 难以实现的。这么做的好处是非常方便代码的维护和管理，这种编程技巧也非常值得我们去学习。
@@ -262,6 +270,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   Vue.options = Object.create(null)
     // component filter directive
     // 给每一个项创建单独的Object，就相当于建个缓存池，之后往这里添加
+    // Vue.options有个components属性，这里将会是ui框架里注入的所有组件和其它插件注入到Vue里的组件的所在
   ASSET_TYPES.forEach(type => {
     Vue.options[type + 's'] = Object.create(null)
   })
@@ -281,6 +290,8 @@ export function initGlobalAPI (Vue: GlobalAPI) {
 }
 ```
 这里就是在 Vue 上扩展的一些全局方法的定义，Vue 官网中关于全局 API 都可以在这里找到，这里不会介绍细节，会在之后的章节我们具体介绍到某个 API 的时候会详细介绍。有一点要注意的是，`Vue.util` 暴露的方法最好不要依赖，因为它可能经常会发生变化，是不稳定的。
+
+![Vue.options.components](../../my/imgs/Vue-options-components.png)
 
 ## 总结
 

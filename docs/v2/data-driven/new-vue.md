@@ -74,8 +74,9 @@ Vue.prototype._init = function (options?: Object) {
     measure(`vue ${vm._name} init`, startTag, endTag)
   }
 
-  if (vm.$options.el) { // 这里访问的是实例对象的$options属性，它是将new Vue时传入的options合并到自身的属性上了
-    // 实例化Vue对象时传入的options里如果有el，那就挂载到这个指定的el上
+  if (vm.$options.el) { 
+    // 这里访问的是实例对象的$options属性，它是将new Vue时传入的options合并到自身的属性上了
+    // 实例化Vue对象时传入的options里如果有el，那就挂载到这个指定的el上。如果没有，那就手动调用$mount方法
     vm.$mount(vm.$options.el)
   }
 }

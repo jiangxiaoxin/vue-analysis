@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="./src/vue.js"></script>
+    <link rel="stylesheet" href="./src/index.css">
+    <script src="./src/normalizeChildren.js"></script>
+</head>
+<body>
+    <div id="app">
+        <p>{{ message }}</p>
+<!--        <p>{{ time }}</p>-->
+        <button @click="changeMessage" ref="changeRef">改变message</button>
+        <div>
+            <div v-for="index in tick" :key="index" class="box" :ref="`divRef_${index}`">
+                {{index}}
+            </div>
+        </div>
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                message: 'Hello Vue!',
+                time: new Date(),
+                tick: 3
+            },
+            mounted() {
+            },
+            methods: {
+                changeMessage() {
+                    this.tick += 1;
+                    this.message = this.tick;
+
+                    //console.log(this.$refs["divRef_1"]);
+                }
+            },
+        })
+    </script>
+</body>
+</html>
