@@ -22,34 +22,34 @@ git push -f https://github.com/jiangxiaoxin/vue-analysis.git master:gh-pages
 
 ## 新增
 
-[event](./docs/my/event.md)
+[event](./docs/my/md/event.md)
 
-[init-computed](./docs/my/init-computed.md)
+[init-computed](./docs/my/md/init-computed.md)
 
-[instance](./docs/my/instance.md)
+[instance](./docs/my/md/instance.md)
 
-[interview](./docs/my/interview.md)
+[interview](./docs/my/md/interview.md)
 
-[keep-alive](./docs/my/keep-alive.md)
+[keep-alive](./docs/my/md/keep-alive.md)
 
-[next-tick](./docs/my/next-tick.md)
+[next-tick](./docs/my/md/next-tick.md)
 
-[pattern](./docs/my/pattern.md)
+[pattern](./docs/my/md/pattern.md)
 
-[property](./docs/my/property.md)
+[property](./docs/my/md/property.md)
 
-[reactive](./docs/my/reactive.md)
+[reactive](./docs/my/md/reactive.md)
 
-[merge-option](./docs/my/merge-option.md)
+[merge-option](./docs/my/md/merge-option.md)
 
-[cached-function](./docs/my/cached-function.md)
+[cached-function](./docs/my/md/cached-function.md)
 
-[watcher](./docs/my/watcher.md)
+[watcher](./docs/my/md/watcher.md)
 
-[init-state](./docs/my/init-state.md)
+[init-state](./docs/my/md/init-state.md)
 
-[de-indent](./docs/my/sfc-parser-deindent.md)
+[de-indent](./docs/my/md/sfc-parser-deindent.md)
 
-[vue-component, vue的继承关系](./docs/my/vue-component.md)
+[vue-component, vue的继承关系](./docs/my/md/vue-component.md)
 
-[computed怎么用，怎么缓存的](./docs/my/vue-component.md)
+[computed怎么用，怎么缓存的](./docs/my/md/vue-component.md)
