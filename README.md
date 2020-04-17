@@ -4,7 +4,7 @@
 
 **author**是原作者的库，链接 https://ustbhuangyi.github.io/vue-analysis
 
-## `htmls`下断点看执行
+`htmls`下导入了完整版Vue，可以断点看执行
 
 ## 发布
 
@@ -50,4 +50,6 @@ git push -f https://github.com/jiangxiaoxin/vue-analysis.git master:gh-pages
 
 [de-indent](./docs/my/sfc-parser-deindent.md)
 
-[vue-component, vue, computed](./docs/my/vue-component.md)
+[vue-component, vue的继承关系](./docs/my/vue-component.md)
+
+[computed怎么用，怎么缓存的](./docs/my/vue-component.md)
