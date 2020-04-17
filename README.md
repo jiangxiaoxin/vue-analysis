@@ -33,3 +33,5 @@
 [init-state](./docs/my/init-state.md)
 
 [de-indent](./docs/my/sfc-parser-deindent.md)
+
+[vue-component, vue, computed](./docs/my/vue-component.md)
