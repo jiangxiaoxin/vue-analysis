@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ustbhuangyi/vue-analysis.git"
+    "url": "git+https://github.com/jiangxiaoxin/vue-analysis.git"
   },
   "keywords": [
     "vue",
@@ -21,9 +21,9 @@
   "author": "ustbuhuangyi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ustbhuangyi/vue-analysis/issues"
+    "url": "https://github.com/jiangxiaoxin/vue-analysis/issues"
   },
-  "homepage": "https://github.com/ustbhuangyi/vue-analysis#readme",
+  "homepage": "https://github.com/jiangxiaoxin/vue-analysis#readme",
   "devDependencies": {
     "vuepress": "^1.2.0"
   }
