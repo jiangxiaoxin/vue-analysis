@@ -1,6 +1,6 @@
 # VueComponent
 
-## Vue 和 VueComponent
+## Vue 和 VueComponent 间的继承关系
 
 这俩是父子类的关系，VueComponent是Vue的子类，在`core/global-api/extend.js`里实现了继承
 
@@ -103,7 +103,7 @@ function initComputed (Comp) {
 
 经过上面的处理，`VueComponent`继承了`Vue`的属性和方法。`Sub.prototype = Object.create(Super.prototype); Sub.prototype.constructor = Sub`这两句就是精髓，实现的继承关系就是下图。
 
-![Vue和VueComponent继承关系](./imgs/vue-vs-vue-component.png)
+<img :src="$withBase('/imgs/vue-vs-vue-component.png')"/>
 
 
 ## computed属性

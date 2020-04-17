@@ -1,6 +1,6 @@
 # 说明
 
-**origin**是我的库，**author**是原作者的库
+**origin**是我的库，**author**是原作者的库，链接 https://ustbhuangyi.github.io/vue-analysis
 
 ## `htmls`下断点看执行
 

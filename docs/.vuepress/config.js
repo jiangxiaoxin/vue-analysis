@@ -24,7 +24,7 @@ module.exports = {
     nav: [
       {
         text: 'my',
-        link: '/my/'
+        link: '/my/md/'
       },
       {
         text: '2.x 版本',
@@ -36,6 +36,16 @@ module.exports = {
       }
     ],
     sidebar: {
+      '/my/': [
+        {
+          title: "文章列表",
+          collapsable: false,
+          children: [
+            ['md/', 'Introduction'],
+            'md/vue-component'
+          ]
+        }
+      ],
       '/v2/': [
         {
           title: '准备工作',
