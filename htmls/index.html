@@ -5,7 +5,6 @@
     <title>Title</title>
     <script src="./src/vue.js"></script>
     <link rel="stylesheet" href="./src/index.css">
-    <script src="./src/normalizeChildren.js"></script>
 </head>
 <body>
     <div id="app">
@@ -17,14 +16,37 @@
                 {{index}}
             </div>
         </div>
+        <my-model></my-model>
     </div>
+    <script type="text/x-template" id="v-model-template">
+        <div>
+            <input type="text" v-model="name">
+            <button @click="printName">name</button>
+        </div>
+    </script>
     <script>
+
+        Vue.component("MyModel", {
+            template: '#v-model-template',
+            data() {
+                return {
+                    name: "hello"
+                }
+            },
+            methods: {
+                printName() {
+                    console.log(this.name)
+                }
+            }
+        })
+
         var app = new Vue({
             el: '#app',
             data: {
                 message: 'Hello Vue!',
                 time: new Date(),
-                tick: 3
+                tick: 3,
+                name: ""
             },
             mounted() {
             },
@@ -34,7 +56,8 @@
                     this.message = this.tick;
 
                     //console.log(this.$refs["divRef_1"]);
-                }
+                },
+                
             },
         })
     </script>
