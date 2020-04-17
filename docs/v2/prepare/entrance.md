@@ -291,7 +291,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
 ```
 这里就是在 Vue 上扩展的一些全局方法的定义，Vue 官网中关于全局 API 都可以在这里找到，这里不会介绍细节，会在之后的章节我们具体介绍到某个 API 的时候会详细介绍。有一点要注意的是，`Vue.util` 暴露的方法最好不要依赖，因为它可能经常会发生变化，是不稳定的。
 
-![Vue.options.components](../../my/imgs/Vue-options-components.png)
+<img :src="$withBase('/imgs/Vue-options-components.png')"/>
 
 ## 总结
 
